@@ -42,7 +42,7 @@ print_help() {
 	exit 0
 }
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -eq 0 ]; then
 	print_usage
 	exit 1
 else
