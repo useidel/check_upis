@@ -61,7 +61,7 @@ fi
 
 check_power() {
 I2CGET_ARG="-y 1 0x6A 0x00"
-# Run basic showmount and find our status
+# Run basic i2cget and find our status
 I2CGET_OUTPUT=`$SUDO $I2CGET $I2CGET_ARG 2>&1`
 
 if [ $? -ne 0 ]
@@ -160,7 +160,7 @@ RESULT=`echo "10*$A+$B"|bc -l`
 
 check_temperature() {
 I2CGET_ARG="-y 1 0x6A 0x0B"
-# Run basic showmount and find our status
+# Run basic i2cget and find our status
 I2CGET_OUTPUT=`$SUDO $I2CGET $I2CGET_ARG 2>&1`
 
 if [ $? -ne 0 ]
