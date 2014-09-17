@@ -30,23 +30,22 @@ PROGNAME=`basename $0`
 
 print_usage() {
 	echo 
-	echo "Usage: $PROGNAME -<p|t|h>"
+	echo " This plugin will check the power and temperature status of an locally attached UPiS."
+	echo 
+	echo 
+        echo " Usage: $PROGNAME -<p|t|h> -w <warning level> -c <critical level>"
+        echo
+        echo "   -p: Power status"
+        echo "   -t: Temperature in Grad Celsius"
+        echo "   -w: WARNING level for power/temperature"
+        echo "   -c: CRITICAL level for power/temperature" 
 	echo 
 }
 
-print_help() {
+if [ "$#" -lt 5 ]; then
 	print_usage
-	echo 
-	echo "This plugin will check the power and temperature status of an locally attached UPiS."
-	echo 
-	exit 0
-}
-
-if [ "$#" -eq 0 ]; then
-	print_usage
-	exit 1
-else
-	MYARG=$1
+        EXITSTATUS=$STATE_UNKNOWN
+        exit $EXITSTATUS
 fi
 
 check_i2cget() {
@@ -110,13 +109,11 @@ then
         exit $EXITSTATUS
 fi
 
-
 DEC=`echo "ibase=16; $1" |bc -l`
 A=$((DEC/16))
 A=$((A&15))
 B=$((DEC&15))
 RESULT=`echo "10*$A+$B"|bc -l`
-
 }
 
 check_temperature() {
@@ -137,26 +134,36 @@ bcdbyte2dec $CLEANED_I2CGET_OUTPUT
 
 echo "Temperature OK - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
 }
-		
 
-case "$MYARG" in
-	-h)
-		print_help
+while getopts "hptw:c:" OPT
+do		
+	case "$OPT" in
+	h)
+		print_usage
 		exit $STATE_UNKNOWN
 		;;
-	-p)
-		check_i2cget
-		check_power
+	p)
+		MYCHECK=power
 		;;
-	-t)
-		check_i2cget
-		check_temperature
+	t)
+		MYCHECK=temperature
 		;;
+        w)
+                WARNLEVEL=$3
+		echo $WARNLEVEL
+                ;;
+        c)
+                CRITLEVEL=$5
+		echo $CRITLEVEL
+                ;;
 	*)
-		print_help
+		print_usage
 		exit $STATE_UNKNOWN
-esac
+	esac
+done
 
+check_i2cget
+check_$MYCHECK
 
 exit $EXITSTATUS
 
