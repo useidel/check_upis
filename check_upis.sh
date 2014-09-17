@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPiS mount plugin for Nagios
+# UPiS plugin for Nagios
 # Written by Udo Seidel
 #
 # Description:
@@ -73,32 +73,73 @@ fi
 
 CLEANED_I2CGET_OUTPUT=`sudo $I2CGET $I2CGET_ARG |sed -e 's/0x0//g'|awk '{print $1}' 2>&1`
 
-case $CLEANED_I2CGET_OUTPUT in
-	1)
-		EXITSTATUS=$STATE_OK
-		echo "UPiS OK - EPR | EPR (External Power)"
-		;;
-	2)
-		EXITSTATUS=$STATE_OK
-		echo "UPiS OK - USB | USB (USB Power)"
-		;;
-	3)
-		EXITSTATUS=$STATE_OK
-		echo "UPiS OK - RPI | RPI (RPI USB Power)"
-		;;
-	4)
+if [ $CUSTOMWARNCRIT -ne 0 ]; then
+	case $CLEANED_I2CGET_OUTPUT in
+		$WARNLEVEL)
 		EXITSTATUS=$STATE_WARNING
-		echo "UPiS WARNING - BAT | BAT (Battery Power)"
+		POWERMSG="UPiS WARNING - "
 		;;
-	5)
+		$CRITLEVEL)
 		EXITSTATUS=$STATE_CRITICAL
-		echo "UPiS CRITICAL - LPR | LPR (Low Power)"
+		POWERMSG="UPiS CRITICAL - "
 		;;
-	*)
+		*)
+		EXITSTATUS=$STATE_OK
+		POWERMSG="UPiS OK - "
+		;;
+	esac
+else
+	case $CLEANED_I2CGET_OUTPUT in
+		1)
+		EXITSTATUS=$STATE_OK
+		POWERMSG="UPiS OK - "
+		;;
+		2)
+		EXITSTATUS=$STATE_OK
+		POWERMSG="UPiS OK - "
+		;;
+		3)
+		EXITSTATUS=$STATE_OK
+		POWERMSG="UPiS OK - "
+		;;
+		4)
+		EXITSTATUS=$STATE_WARNING
+		POWERMSG="UPiS WARNING - "
+		;;
+		5)
+		EXITSTATUS=$STATE_CRITICAL
+		POWERMSG="UPiS WARNING - "
+		;;
+		*)
 		EXITSTATUS=$STATE_UNKNOWN
-		echo "UPiS UNKNOWN | UPiS Status Unknown"
+		POWERMSG="UPiS UNKNOWN "
 		;;
+	esac
+fi
+
+case $CLEANED_I2CGET_OUTPUT in
+                1)
+                POWERMSG="$POWERMSG EPR | EPR (External Power)"
+                ;;
+                2)
+                POWERMSG="$POWERMSG USB | USB (USB Power)"
+                ;;
+                3)
+                POWERMSG="$POWERMSG RPI | RPI (RPI USB Power)"
+                ;;
+                4)
+                POWERMSG="$POWERMSG BAT | BAT (Battery Power)"
+                ;;
+                5)
+                POWERMSG="$POWERMSG LPR | LPR (Low Power)"
+                ;;
+                *)
+                POWERMSG="$POWERMSG | UPiS Status Unknown"
+                ;;
 esac
+
+echo $POWERMSG
+
 }
 
 bcdbyte2dec() {
@@ -134,6 +175,17 @@ CLEANED_I2CGET_OUTPUT=`sudo $I2CGET $I2CGET_ARG |sed -e 's/0x//g'|awk '{print $1
 bcdbyte2dec $CLEANED_I2CGET_OUTPUT
 
 if [ $CUSTOMWARNCRIT -ne 0 ]; then
+	# check if the levels are integers
+	echo $WARNLEVEL | awk '{ exit ! /^[0-9]+$/ }'
+	if [ $? -ne 0 ]; then
+		echo " warning level ($WARNLEVEL) is not an integer"
+		exit $STATE_UNKNOWN
+	fi
+	echo $CRITLEVEL | awk '{ exit ! /^[0-9]+$/ }'
+	if [ $? -ne 0 ]; then
+		echo " critical level ($CRITLEVEL) is not an integer"
+		exit $STATE_UNKNOWN
+	fi
 	if [ $WARNLEVEL -gt $CRITLEVEL ]; then
 		echo
 		echo " The value for critical level has to be equal or higher than the one for warning level"
