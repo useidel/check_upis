@@ -11,6 +11,7 @@ SUDO="/usr/bin/sudo"
 I2CGET="/usr/sbin/i2cget"
 BC="/usr/bin/bc"
 MYTEST=""
+CUSTOMWARNCRIT=0 # no external defined warning and critical levels
 
 # sudo is needed if i2cget cannot be executed by the nagios 
 # user context w/o sudo granted priviledges
@@ -42,7 +43,7 @@ print_usage() {
 	echo 
 }
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 1 ]; then
 	print_usage
         EXITSTATUS=$STATE_UNKNOWN
         exit $EXITSTATUS
@@ -132,8 +133,33 @@ CLEANED_I2CGET_OUTPUT=`sudo $I2CGET $I2CGET_ARG |sed -e 's/0x//g'|awk '{print $1
 
 bcdbyte2dec $CLEANED_I2CGET_OUTPUT
 
-echo "Temperature OK - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
+if [ $CUSTOMWARNCRIT -ne 0 ]; then
+	if [ $WARNLEVEL -gt $CRITLEVEL ]; then
+		echo
+		echo " The value for critical level has to be equal or higher than the one for warning level"
+		echo " Your values are: critcal ($CRITLEVEL) and warning ($WARNLEVEL)"
+		echo
+		exit $STATE_UNKNOWN
+	fi
+	if [ $CLEANED_I2CGET_OUTPUT -lt $WARNLEVEL ]; then
+		EXITSTATUS=$STATE_OK
+		echo "Temperature OK - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
+	else
+		EXITSTATUS=$STATE_WARNING
+		if [ $CLEANED_I2CGET_OUTPUT -lt $CRITLEVEL ]; then
+			echo "Temperature WARNING - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
+		else
+			EXITSTATUS=$STATE_CRITICAL
+				echo "Temperature CRITICAL - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
+		fi
+	fi
+
+
+else
+	echo "Temperature OK - $CLEANED_I2CGET_OUTPUT 'C | $CLEANED_I2CGET_OUTPUT"
+fi
 }
+
 
 while getopts "hptw:c:" OPT
 do		
@@ -150,11 +176,11 @@ do
 		;;
         w)
                 WARNLEVEL=$3
-		echo $WARNLEVEL
+		CUSTOMWARNCRIT=1
                 ;;
         c)
                 CRITLEVEL=$5
-		echo $CRITLEVEL
+		CUSTOMWARNCRIT=1
                 ;;
 	*)
 		print_usage
