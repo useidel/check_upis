@@ -71,7 +71,7 @@ else
 EXITSTATUS=$STATE_OK
 fi
 
-CLEANED_I2CGET_OUTPUT=`sudo $I2CGET $I2CGET_ARG |sed -e 's/0x0//g'|awk '{print $1}' 2>&1`
+CLEANED_I2CGET_OUTPUT=`sudo $I2CGET $I2CGET_ARG |sed -e 's/0x//g'|awk '{print $1}' 2>&1`
 
 if [ $CUSTOMWARNCRIT -ne 0 ]; then
 	case $CLEANED_I2CGET_OUTPUT in
