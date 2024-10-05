@@ -10,7 +10,7 @@
 SUDO="/usr/bin/sudo"
 I2CGET="/usr/sbin/i2cget"
 BC="/usr/bin/bc"
-MYTEST=""
+MYCHECK=""
 CUSTOMWARNCRIT=0 # no external defined warning and critical levels
 
 # sudo is needed if i2cget cannot be executed by the nagios 
