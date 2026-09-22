@@ -1,0 +1,26 @@
+# check_upis
+
+> A Nagios plugin for checking UPiS power status and temperature on Raspberry Pi.
+
+The project provides a small shell-based monitoring plugin for a UPiS UPS, an uninterruptible power supply for Raspberry Pi systems.
+
+## Repository overview
+
+- [Source repository](https://github.com/useidel/check_upis): Canonical GitHub repository, including source files, issues, history, and repository metadata.
+- [README](https://raw.githubusercontent.com/useidel/check_upis/HEAD/README.md): Primary project documentation and usage notes.
+
+## Topics
+
+- Nagios
+- Raspberry Pi
+- UPiS
+- UPS monitoring
+
+## Additional resources
+
+- [Main plugin script](https://raw.githubusercontent.com/useidel/check_upis/HEAD/check_upis.sh)
+
+## Optional
+
+- [Repository activity](https://github.com/useidel/check_upis/commits): Commit history for implementation changes and maintenance context.
+- [Issues](https://github.com/useidel/check_upis/issues): Questions, bug reports, and project discussions when enabled.
